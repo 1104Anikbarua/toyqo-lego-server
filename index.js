@@ -30,6 +30,25 @@ async function run() {
 
         const legoCollections = client.db('legoCars').collection('legos')
 
+        // load all the legos 
+        app.get('/legos', async (req, res) => {
+            const query = {};
+            // console.log(query)
+            const result = await legoCollections.find(query).toArray()
+            // console.log(result)
+            res.send(result)
+        })
+        // get lego data based on category
+        app.get('/toys', async (req, res) => {
+            // console.log(req.query);
+            const category = req.query.category;
+            const query = { category: category }
+            // console.log(query)
+            const result = await legoCollections.find(query).toArray()
+            // console.log(result)
+            res.send(result)
+        })
+
         // add a new lego
         app.post('/toys', async (req, res) => {
             const legoInfo = req.body;
