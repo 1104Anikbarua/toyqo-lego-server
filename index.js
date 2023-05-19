@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 
 
@@ -35,7 +35,7 @@ async function run() {
         const indexOptions = { name: 'toyName' }
         const result = await legoCollections.createIndex(indexKeys, indexOptions)
 
-        // load all the legos 
+        // load all the legos by default and limited search by toy name
         app.get('/legos', async (req, res) => {
             // console.log(req.query)
             const toyName = req.query.toyname;
@@ -63,12 +63,50 @@ async function run() {
             res.send(result)
         })
 
+
+        // load all the legos by default and limited search by toy name
+        app.get('/mylegos', async (req, res) => {
+            // console.log(req.query)
+            const email = req.query.email;
+            let query = {}
+            if (email) {
+                query = { sellerEmail: email }
+
+            }
+            // console.log(query)
+            const result = await legoCollections.find(query).toArray()
+            // console.log(result)
+            res.send(result)
+        })
+
         // add a new lego
         app.post('/toys', async (req, res) => {
             const legoInfo = req.body;
             // console.log(legoInfo)
             const result = await legoCollections.insertOne(legoInfo)
             // console.log(result);
+            res.send(result);
+        })
+
+        // update a lego 
+        app.patch('/toys/:id', async (req, res) => {
+            const id = req.params.id;
+            // console.log(id)
+            const updateInfo = req.body;
+            // console.log(updateInfo)
+            const query = { _id: new ObjectId(id) }
+            // console.log(query)
+
+            const updatedDoc = {
+                $set: {
+                    toyPhoto: updateInfo.photo,
+                    quantity: updateInfo.quantity,
+                    price: updateInfo.price,
+                    detail: updateInfo.detail
+                }
+            }
+            // console.log(updatedDoc)
+            const result = await legoCollections.updateOne(query, updatedDoc);
             res.send(result);
         })
 
