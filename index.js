@@ -29,6 +29,7 @@ async function run() {
         await client.connect();
 
         const legoCollections = client.db('legoCars').collection('legos')
+        const pickCollections = client.db('legoCars').collection('picks')
 
         // indexing for toyName search
         const indexKeys = { toyName: 1 }
@@ -71,12 +72,30 @@ async function run() {
             let query = {}
             if (email) {
                 query = { sellerEmail: email }
-
             }
+            const order = req.query.sort === 'asc' ? 1 : -1;
+
             // console.log(query)
-            const result = await legoCollections.find(query).toArray()
+            const result = await legoCollections.find(query).sort({ price: order }).toArray()
             // console.log(result)
             res.send(result)
+        })
+
+        // load single lego details 
+        app.get('/legos/:id', async (req, res) => {
+            const id = req.params.id;
+            // console.log(id)
+            const query = { _id: new ObjectId(id) }
+            const result = await legoCollections.findOne(query);
+            // console.log(result)
+            res.send(result)
+        })
+
+        // load this week picks data 
+        app.get('/picks', async (req, res) => {
+            const query = {};
+            const result = await pickCollections.find(query).toArray();
+            res.send(result);
         })
 
         // add a new lego
@@ -100,15 +119,24 @@ async function run() {
             const updatedDoc = {
                 $set: {
                     toyPhoto: updateInfo.photo,
-                    quantity: updateInfo.quantity,
-                    price: updateInfo.price,
-                    detail: updateInfo.detail
+                    // price: updateInfo.price,
+                    // quantity: updateInfo.quantity,
+                    // detail: updateInfo.detail
                 }
             }
             // console.log(updatedDoc)
             const result = await legoCollections.updateOne(query, updatedDoc);
             res.send(result);
         })
+        // delete a lego
+        app.delete('/toys/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await legoCollections.deleteOne(query);
+            // console.log(result)
+            res.send(result);
+        })
+
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
