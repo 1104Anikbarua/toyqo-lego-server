@@ -30,9 +30,23 @@ async function run() {
 
         const legoCollections = client.db('legoCars').collection('legos')
 
+        // indexing for toyName search
+        const indexKeys = { toyName: 1 }
+        const indexOptions = { name: 'toyName' }
+        const result = await legoCollections.createIndex(indexKeys, indexOptions)
+
         // load all the legos 
         app.get('/legos', async (req, res) => {
-            const query = {};
+            // console.log(req.query)
+            const toyName = req.query.toyname;
+            // console.log(toyName)
+            let query = {}
+            if (toyName) {
+                query = { $or: [{ toyName: { $regex: toyName, $options: 'i' } }] }
+                // query = {
+                //     $text: { $search: toyName }
+                // }
+            }
             // console.log(query)
             const result = await legoCollections.find(query).toArray()
             // console.log(result)
