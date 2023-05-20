@@ -139,8 +139,8 @@ async function run() {
                 $set: {
                     // toyPhoto: updateInfo.photo,
                     price: updateInfo.price,
-                    quantity: updateInfo.quantity,
-                    detail: updateInfo.detail
+                    // quantity: updateInfo.quantity,
+                    // detail: updateInfo.detail
                 }
             }
             // console.log(updatedDoc)
