@@ -44,12 +44,10 @@ async function run() {
             let query = {}
             if (toyName) {
                 query = { $or: [{ toyName: { $regex: toyName, $options: 'i' } }] }
-                // query = {
-                //     $text: { $search: toyName }
-                // }
+
             }
             // console.log(query)
-            const result = await legoCollections.find(query).toArray()
+            const result = await legoCollections.find(query).limit(20).toArray()
             // console.log(result)
             res.send(result)
         })
@@ -65,7 +63,7 @@ async function run() {
         })
 
 
-        // load all the legos by default and limited search by toy name
+        // load all the legos by default and limited search by toy name and sort by high to low and low to high
         app.get('/mylegos', async (req, res) => {
             // console.log(req.query)
             const email = req.query.email;
@@ -108,7 +106,7 @@ async function run() {
         })
 
         // update a lego 
-        app.patch('/toys/:id', async (req, res) => {
+        app.put('/toys/:id', async (req, res) => {
             const id = req.params.id;
             // console.log(id)
             const updateInfo = req.body;
@@ -118,10 +116,10 @@ async function run() {
 
             const updatedDoc = {
                 $set: {
-                    toyPhoto: updateInfo.photo,
-                    // price: updateInfo.price,
-                    // quantity: updateInfo.quantity,
-                    // detail: updateInfo.detail
+                    // toyPhoto: updateInfo.photo,
+                    price: updateInfo.price,
+                    quantity: updateInfo.quantity,
+                    detail: updateInfo.detail
                 }
             }
             // console.log(updatedDoc)
