@@ -55,9 +55,12 @@ async function run() {
         app.get('/toys', async (req, res) => {
             // console.log(req.query);
             const category = req.query.category;
+            const page = parseInt(req.query.page);
+            const size = parseInt(req.query.items);
+            const skip = page * size;
             const query = { category: category }
-            // console.log(query)
-            const result = await legoCollections.find(query).toArray()
+
+            const result = await legoCollections.find(query).skip(skip).limit(size).toArray()
             // console.log(result)
             res.send(result)
         })
@@ -90,11 +93,22 @@ async function run() {
         })
 
         // load this week picks data 
-        app.get('/picks', async (req, res) => {
+        app.get('/pick', async (req, res) => {
             const query = {};
             const result = await pickCollections.find(query).toArray();
             res.send(result);
         })
+
+        // get total lego count 
+        app.get('/documents', async (req, res) => {
+            const count = await legoCollections.estimatedDocumentCount()
+            res.send({ count })
+        })
+
+        //get pins blog
+        // app.get('pins', async (req, res) => {
+
+        // })
 
         // add a new lego
         app.post('/toys', async (req, res) => {
@@ -104,9 +118,13 @@ async function run() {
             // console.log(result);
             res.send(result);
         })
+        // // post pin blog
+        // app.post('pins', async (req, res) => {
+
+        // })
 
         // update a lego 
-        app.put('/toys/:id', async (req, res) => {
+        app.patch('/toys/:id', async (req, res) => {
             const id = req.params.id;
             // console.log(id)
             const updateInfo = req.body;
