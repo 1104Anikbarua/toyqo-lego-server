@@ -137,10 +137,10 @@ async function run() {
 
             const updatedDoc = {
                 $set: {
-                    // toyPhoto: updateInfo.photo,
+                    toyPhoto: updateInfo.photo,
                     price: updateInfo.price,
-                    // quantity: updateInfo.quantity,
-                    // detail: updateInfo.detail
+                    quantity: updateInfo.quantity,
+                    detail: updateInfo.detail
                 }
             }
             // console.log(updatedDoc)
