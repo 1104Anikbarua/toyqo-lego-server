@@ -26,28 +26,31 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
 
         const legoCollections = client.db('legoCars').collection('legos')
         const pickCollections = client.db('legoCars').collection('picks')
 
         // indexing for toyName search
-        const indexKeys = { toyName: 1 }
-        const indexOptions = { name: 'toyName' }
-        const result = await legoCollections.createIndex(indexKeys, indexOptions)
+
 
         // load all the legos by default and limited search by toy name
+        // app.get("/toySearch/:text", async (req, res) => {
+        //     const text = req.params.text;
+        //     const Alldata = await toyCollection.find().toArray();
+        //     const result = Alldata.filter((data) => data.toyname.toLowerCase().includes(text.toLowerCase()));
+        //     res.send(result);
         app.get('/legos', async (req, res) => {
             // console.log(req.query)
             const toyName = req.query.toyname;
             // console.log(toyName)
             let query = {}
-            if (toyName) {
-                query = { $or: [{ toyName: { $regex: toyName, $options: 'i' } }] }
-
-            }
+            // if (toyName) {
+            //     query = { toyName: toyName }
+            // }
             // console.log(query)
-            const result = await legoCollections.find(query).limit(20).toArray()
+            const allData = await legoCollections.find(query).limit(20).toArray()
+            // console.log(allData)
+            const result = allData.filter((data) => data.toyName.toLowerCase().includes(toyName.toLowerCase()));
             // console.log(result)
             res.send(result)
         })
@@ -155,7 +158,6 @@ async function run() {
 
 
         // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
         // console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
