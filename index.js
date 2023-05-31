@@ -29,6 +29,8 @@ async function run() {
 
         const legoCollections = client.db('legoCars').collection('legos')
         const pickCollections = client.db('legoCars').collection('picks')
+        const blogCollections = client.db('legoCars').collection('blogs')
+        const bookingCollections = client.db('legoCars').collection('carts')
 
         // indexing for toyName search
 
@@ -68,7 +70,6 @@ async function run() {
             res.send(result)
         })
 
-
         // load all the legos by default and limited search by toy name and sort by high to low and low to high
         app.get('/mylegos', async (req, res) => {
             // console.log(req.query)
@@ -103,15 +104,32 @@ async function run() {
         })
 
         // get total lego count 
+        // app.get('/documents', async (req, res) => {
+        //     const count = await legoCollections.estimatedDocumentCount()
+        //     res.send({ count })
+        // })
         app.get('/documents', async (req, res) => {
-            const count = await legoCollections.estimatedDocumentCount()
-            res.send({ count })
+            const query = req.query;
+            // console.log(query, '114')
+            const result = (await legoCollections.find(query).toArray()).length
+            // console.log(result)
+            res.send({ result })
         })
 
-        //get pins blog
-        // app.get('pins', async (req, res) => {
+        //get bookmark blog
+        app.get('/blogs', async (req, res) => {
+            const query = {};
+            const result = await blogCollections.find(query).toArray()
+            res.send(result)
+        })
 
-        // })
+        // get order lego filter by email
+        app.get('/carts', async (req, res) => {
+            const email = req.query.email;
+            const filter = { email: email }
+            const result = await bookingCollections.find(filter).toArray();
+            res.send(result);
+        })
 
         // add a new lego
         app.post('/toys', async (req, res) => {
@@ -121,10 +139,25 @@ async function run() {
             // console.log(result);
             res.send(result);
         })
-        // // post pin blog
-        // app.post('pins', async (req, res) => {
 
-        // })
+        // post bookmark blog
+        app.post('/blogs', async (req, res) => {
+            const blog = req.body;
+            // console.log(blog)
+            const result = await blogCollections.insertOne(blog)
+            res.send(result)
+        })
+
+        // lego add to cart 
+        app.post('/carts', async (req, res) => {
+            const bookingDetail = req.body;
+            // console.log(bookingDetail)
+            // const query = { _id: new ObjectId(req.body.toyId) }
+            // const searchToy = await legoCollections.findOne(query)
+            // console.log(searchToy)
+            const result = await bookingCollections.insertOne(bookingDetail)
+            res.send(result)
+        })
 
         // update a lego 
         app.patch('/toys/:id', async (req, res) => {
@@ -146,6 +179,25 @@ async function run() {
             // console.log(updatedDoc)
             const result = await legoCollections.updateOne(query, updatedDoc);
             res.send(result);
+        })
+
+        // update lego quantity after user add to cart lego
+        app.patch('/legos/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const searchLego = await legoCollections.findOne(query)
+            // console.log(searchLego)
+            const updateInfo = req.body;
+            // console.log(updateInfo)
+            const updatedDoc = {
+                $set: {
+                    quantity: (searchLego.quantity - updateInfo.quantity)
+                }
+            }
+            // console.log(updatedDoc)
+            const result = await legoCollections.updateOne(query, updatedDoc)
+            res.send(result);
+
         })
         // delete a lego
         app.delete('/toys/:id', async (req, res) => {
